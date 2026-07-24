@@ -6,6 +6,11 @@ const ILovePDFApi = require('@ilovepdf/ilovepdf-nodejs');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
+const uploadDir = 'uploads';
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
+
 
 app.use(cors());
 app.use(express.json());
@@ -38,7 +43,6 @@ app.post('/api/process/:tool', upload.single('file'), async (req, res) => {
         res.send(data);
 
     } catch (error) {
-        // Enhanced error logging to capture the exact iLovePDF error response
         console.error(`Error processing tool [${toolName}]:`, error.response?.data || error.message || error);
         if (filePath && fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
@@ -48,6 +52,7 @@ app.post('/api/process/:tool', upload.single('file'), async (req, res) => {
 
 });
 
-app.listen(process.env.PORT || 3000, () => {
-    console.log('easypdf backend server running');
+app.listen(3000, () => {
+    console.log('easypdf backend server running on port 3000');
 });
+
