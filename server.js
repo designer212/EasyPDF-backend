@@ -2,15 +2,18 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const fs = require('fs');
+const path = require('path');
 const ILovePDFApi = require('@ilovepdf/ilovepdf-nodejs');
+const ILovePDFFile = require('@ilovepdf/ilovepdf-nodejs/lib/ILovePDFFile');
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
+
 const uploadDir = 'uploads';
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir);
 }
 
+const upload = multer({ dest: 'uploads/' });
 
 app.use(cors());
 app.use(express.json());
@@ -32,7 +35,11 @@ app.post('/api/process/:tool', upload.single('file'), async (req, res) => {
     try {
         const task = ilovepdf.newTask(toolName);
         await task.start();
-        await task.addFile(filePath);
+        
+        // Wrap the file using ILovePDFFile and an absolute path
+        const file = new ILovePDFFile(path.resolve(__dirname, filePath));
+        await task.addFile(file);
+
         await task.process();
         const data = await task.download();
         
@@ -49,10 +56,9 @@ app.post('/api/process/:tool', upload.single('file'), async (req, res) => {
         }
         res.status(500).send({ error: 'Failed to process document.' });
     }
-
 });
 
-app.listen(3000, () => {
-    console.log('easypdf backend server running on port 3000');
+app.listen(process.env.PORT || 3000, () => {
+    console.log('easypdf backend server running');
 });
 
