@@ -38,14 +38,16 @@ app.post('/api/process/:tool', upload.single('file'), async (req, res) => {
         res.send(data);
 
     } catch (error) {
-        console.error(`Error processing tool [${toolName}]:`, error);
+        // Enhanced error logging to capture the exact iLovePDF error response
+        console.error(`Error processing tool [${toolName}]:`, error.response?.data || error.message || error);
         if (filePath && fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
         res.status(500).send({ error: 'Failed to process document.' });
     }
+
 });
 
-app.listen(3000, () => {
-    console.log('easypdf backend server running on port 3000');
+app.listen(process.env.PORT || 3000, () => {
+    console.log('easypdf backend server running');
 });
